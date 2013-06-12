@@ -1,22 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import SimpleHTTPServer
-import SocketServer
+from bottle import route, run
 
-class AStarLiteRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-	def __init__(request, client_address, server):
-		SimpleHTTPServer.SimpleHTTPRequestHandler(self, request, client_address, server)
-		pass
+@route('/hello')
+def hello():
+    return "Everyday a star is born (Can you say New York City?) Clap for 'em, clap for 'em, clap for 'em, hey"
 
-	def do_GET(self):
-		print '***', self.path
-
-PORT = 8000
-
-Handler = AStarLiteRequestHandler
-
-httpd = SocketServer.TCPServer(("", PORT), Handler)
-
-print "serving at port", PORT
-httpd.serve_forever()
+run(host='localhost', port=8080, debug=True)
