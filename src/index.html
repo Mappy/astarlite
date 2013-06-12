@@ -37,7 +37,7 @@
              finalpoint.transform(epsg_900913, epsg_4326);
 
              // load to route             
-			 url = "/route/(" + startpoint.x + "," + startpoint.y + ")-(" + finalpoint.x + "," + finalpoint.y + ")";
+			 url = "/route/" + startpoint.y + "," + startpoint.x + "/" + finalpoint.y + "," + finalpoint.x;
 			 kml_layer = new OpenLayers.Layer.Vector("KML", {
 				 strategies : [new OpenLayers.Strategy.Fixed()],
 				 protocol : new OpenLayers.Protocol.HTTP({
