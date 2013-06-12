@@ -26,7 +26,7 @@ First decompress ile-de-france.osm.bz2
 
 We need to insert all the roads in the database thanks to the spatialite_osm_net command line interface, part of the spatialite-tools utilities, installed from spatialite-bin Ubuntu package.
 
-    spatialite_osm_net -o  ile-de-france.osm -routing.sqlite -T roads -m
+    spatialite_osm_net -o  ile-de-france.osm -d routing.sqlite -T roads -m
 
 Then, we create the network with the internal data structure for routing algorithms in spatialite
 
