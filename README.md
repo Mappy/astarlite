@@ -39,23 +39,29 @@ You can also use the spatialite-gui tool as described on spatialite wiki : https
 Now, the network is inside the database, but we cannot make queries yet. We have to declare an interface that will use the data.
 
 Open spatialite3 console
+
     spatialite3 routing.sqlite
 Then create the virtual table that we'll be able to query for routes
+
     CREATE VIRTUAL TABLE idf_net USING VirtualNetwork(net_data);
     
 The previous command loads the network graph in memory.
 
 Now we can make our first query :
+
     SELECT * FROM idf_net WHERE NodeFrom = 123255457 AND NodeTo = 1430982681;
 
 This query might be slow, because it uses the Dijkstra algorithm, which will stricty provide the shortest path.
 
 We can specify that we want to use the A* heuristic, way faster, which give very good results on real networks.
+
     UPDATE idf_net SET Algorithm = "A*";
     
 We can see duration of the queries in the spatialite console by enbabling time measurment
+
     .time ON
 And make our query again
+
     SELECT * FROM idf_net WHERE NodeFrom = 123255457 AND NodeTo = 1430982681;
      
      
