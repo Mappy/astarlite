@@ -12,7 +12,7 @@ We'll work on the surburban area around Paris called Île-de-France. You can dow
 ## Install the dependencies
 
 ### On Ubuntu
-  apt-get install libspatialite3 spatialite-bin
+    apt-get install libspatialite3 spatialite-bin
 
 ### On Windows
 
