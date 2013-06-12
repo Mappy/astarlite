@@ -64,7 +64,7 @@ We can specify that we want to use the A* algorithm, way faster, which give very
     
 We can see duration of the queries in the spatialite console by enbabling time measurment
 
-    .time ON
+    .timer ON
 And make our query again
 
     SELECT * FROM idf_net WHERE NodeFrom = 123255457 AND NodeTo = 1430982681;
