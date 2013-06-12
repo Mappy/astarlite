@@ -15,7 +15,6 @@ DrawPoints = OpenLayers.Class(OpenLayers.Control.DrawFeature, {
         OpenLayers.Control.DrawFeature.prototype.drawFeature.apply(
 				this, arguments	
 			);
-		alert(this.layer.features.length);
         if (this.layer.features.length == 1) {
             // we just draw the startpoint
             // note: if we want to apply a special style to the 
