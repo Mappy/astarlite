@@ -55,13 +55,14 @@
 
     Ext.onReady(function() {
         // create the map panel
+        mapcenter =  new OpenLayers.LonLat(2.35, 48.85);
         var panel = new GeoExt.MapPanel({
             renderTo: "gxmap",
             map: {
                 layers: [new OpenLayers.Layer.OSM("Simple OSM Map")]
             },
-            center: [402911, 5243870	],
-            zoom: 12,
+            center: [825792.101928, 5424157.66149],
+            zoom : 14,
             height: 400,
             width: 600,
             title: "A Simple GeoExt Map"
