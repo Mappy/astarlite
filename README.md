@@ -2,23 +2,23 @@ astarlite
 =========
 
 
-Get the data
+## Get the data
 
 You can get OpenStreeMap data on your working area on Cloudmade which gracefully give access to several zones.
 
 We'll work on the surburban area around Paris called Île-de-France. You can download the ile-de-france.osm.bz2 file on http://downloads.cloudmade.com/europe/western_europe/france/ile-de-france#downloads_breadcrumbs
 
 
-Install the dependencies
+## Install the dependencies
 
-On Ubuntu
+### On Ubuntu
 apt-get install libspatialite3 spatialite-bin
 
-On Windows
+### On Windows
 
 
 
-Prepare the data
+## Prepare the data
 Now, we'll set a database that is suitable for routing computation.
 
 First decompress the data ile-de-france.osm.bz2
