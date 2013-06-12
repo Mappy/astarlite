@@ -6,7 +6,7 @@ astarlite
 
 You can download OpenStreeMap data from Cloudmade which gracefully give access to several zones.
 
-We'll work on the suburban area around Paris called Île-de-France. You can download the ile-de-france.osm.bz2 file on http://downloads.cloudmade.com/europe/western_europe/france/ile-de-france#downloads_breadcrumbs
+We'll work on the suburban area around Paris called Île-de-France. You can download the ile-de-france.osm.bz2 file on http://downloads.cloudmade.com/europe/western_europe/france/ile-de-france#downloads_breadcrumbs using download_data.sh
 
 
 ## Install dependencies
