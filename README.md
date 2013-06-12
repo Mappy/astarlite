@@ -15,12 +15,12 @@ We'll work on the suburban area around Paris called Île-de-France. You can down
     apt-get install libspatialite3 spatialite-bin
 
 ### On Windows
-One can try to install binaries from http://www.gaia-gis.it/gaia-sins/ under MS Windows binaries section. A simple alternative is to use a VM (see below) 
+One can try to install binaries from http://www.gaia-gis.it/gaia-sins/ under MS Windows binaries section. A simple alternative is to use a VM [(see below)](#virtualmachin) 
 
 ### On Mac OSX
-MacPorts are too old (spatialite version is 2.3.1), compiling libspatialite is not straightforward (since you need proj4 and geos), a better option is to use a VM (see below)
+MacPorts are too old (spatialite version is 2.3.1), compiling libspatialite is not straightforward (since you need proj4 and geos), a better option is to use a VM [(see below)](#virtualmachin)
 
-### Using a Virtual Machine
+### <a id="virtualmachin"></a>Using a Virtual Machine
 Go to http://live.osgeo.org/en/download.html, download a virtual machine and follow the instructions here http://live.osgeo.org/en/quickstart/virtualization_quickstart.html
 This distributions already contains libspatialite3 spatialite-bin
 
