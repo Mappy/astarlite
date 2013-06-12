@@ -64,5 +64,5 @@ And make our query again
 
     SELECT * FROM idf_net WHERE NodeFrom = 123255457 AND NodeTo = 1430982681;
      
-     
+Now the computing time is reasonable !
     
