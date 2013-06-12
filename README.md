@@ -37,9 +37,10 @@ You can also use the spatialite-gui tool as described on spatialite wiki : https
 
 Now, the network is inside the database, but we cannot make queries yet. We have to declare an interface that will use the data.
 
-Open spatialite3 console
+Open spatialite console
 
-    spatialite3 routing.sqlite
+    spatialite routing.sqlite
+    
 Then create the virtual table that we'll be able to query for routes
 
     CREATE VIRTUAL TABLE idf_net USING VirtualNetwork(net_data);
