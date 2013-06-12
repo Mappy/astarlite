@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from bottle import route, run, static_file
+from bottle import route, run, static_file, template
 from spatialite_routing import Route
+
+kml_template = open("template.kml", "r").read()
 
 @route('/')
 def index():
@@ -22,6 +24,7 @@ def route(start, end):
 	route = Route('/home/pierre/dev/routing.sqlite')
 	lat_from, lng_from = tuple(map(float, start.split(",")))
 	lat_to, lng_to = tuple(map(float, end.split(",")))
-	return route.route(lat_from, lng_from, lat_to, lng_to)
-
+	path = route.route(lat_from, lng_from, lat_to, lng_to)
+	return template(kml_template, path=path)
+		
 run(host='localhost', port=8080, debug=True)
