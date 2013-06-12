@@ -7,7 +7,7 @@ astarlite
 You can download OpenStreeMap data from Cloudmade which gracefully give access to several zones.
 
 We'll work on the suburban area around Paris called Île-de-France. You can download the ile-de-france.osm.bz2 file on http://downloads.cloudmade.com/europe/western_europe/france/ile-de-france#downloads_breadcrumbs using download_data.sh
-
+(If you want faster results, you can use a smaller data set such as Monaco)
 
 ## Install dependencies
 
@@ -27,7 +27,9 @@ This distributions already contains libspatialite3 spatialite-bin
 ## Process data
 Now, we'll set a database that is suitable for routing computation.
 
-First decompress ile-de-france.osm.bz2
+If you have not used download_data.sh, you need to decompress ile-de-france.osm.bz2
+
+    bunzip2 ile-de-france.osm.bz2
 
 We need to insert all the roads in the database thanks to the spatialite_osm_net command line interface, part of the spatialite-tools utilities, installed from spatialite-bin Ubuntu package.
 
