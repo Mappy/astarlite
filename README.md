@@ -12,7 +12,7 @@ We'll work on the suburban area around Paris called Île-de-France. You can down
 ## Install dependencies
 
 ### On Ubuntu
-    apt-get install libspatialite3 spatialite-bin
+    sudo apt-get install sqlite3 libspatialite3 spatialite3 spatialite-binspatialite-gui python-pysqlite2
 
 ### On Windows
 One can try to install binaries from http://www.gaia-gis.it/gaia-sins/ under MS Windows binaries section. A simple alternative is to use a VM [(see below)](#virtualmachin) 
