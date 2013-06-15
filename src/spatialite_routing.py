@@ -20,7 +20,10 @@ class Routing:
     def get_nearest_node(self, lat, lng):
         cur = self.conn.cursor()
         query = """
-            SELECT node_from, ST_Distance(PointFromText('Point({lng} {lat})'), geometry)
+            SELECT 
+                node_from, node_to, 
+                ST_Distance(MakePoint({lng}, {lat}), PointN(geometry, 1)) as dist_node_from, 
+                ST_Distance(MakePoint({lng}, {lat}), PointN(geometry, NumPoints(geometry))) as dist_node_to
             FROM roads 
             WHERE ROWID IN 
             (  SELECT pkid
@@ -28,16 +31,18 @@ class Routing:
                WHERE xmin < {lng} + 0.001 AND xmax > {lng} - 0.001
                     AND ymin < {lat} + 0.001 AND ymax > {lat} - 0.001
             )
-            ORDER BY Distance(PointFromText('Point({lng} {lat})'), geometry)
+            ORDER BY Distance(MakePoint({lng}, {lat}), geometry)
             LIMIT 1
         """.format(lat = lat, lng = lng)
         cur.execute(query)
         rec = cur.fetchone()        
         cur.close()
-        if rec != None:
+        if rec == None:
+            return None
+        if rec[2] < rec[3]:
             return rec[0]
         else:
-            return None
+            return rec[1]
 
     def get_center(self):
         cur = self.conn.cursor()
