@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from bottle import route, run, static_file, template
-from spatialite_routing import Route
+from spatialite_routing import Routing
 import argparse
 
 kml_template = open("template.kml", "r").read()
-dbfile = "routing.sqlite"
+routing = None
 
 @route('/')
 def index():
-    route = Route(dbfile)
-    center = route.get_center()
-    route.close()
+    center = routing.get_center()
     return template("index.html", center_x = center[0], center_y = center[1])
 
 @route('/js/<path:path>')
@@ -26,11 +24,9 @@ def hello():
 @route('/route/<start>/<end>')
 def route(start, end):
     # ex: 7.4218041,43.736974400000001, 7.4186261,43.725380600000001
-    route = Route(dbfile)
     lng_from, lat_from = tuple(map(float, start.split(",")))
     lng_to, lat_to = tuple(map(float, end.split(",")))
-    path = route.route(lat_from, lng_from, lat_to, lng_to)
-    route.close()
+    path = routing.compute_route(lat_from, lng_from, lat_to, lng_to)
     return template(kml_template, path=path)
         
 
@@ -38,5 +34,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("database")
     args = parser.parse_args()
-    dbfile = args.database
+    routing = Routing(args.database)
     run(host='localhost', port=8080, debug=True)
