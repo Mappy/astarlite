@@ -11,8 +11,10 @@ class Routing:
     def compute_route(self, lat_from, lng_from, lat_to, lng_to):
         node_from = self.get_nearest_node(lat_from, lng_from)
         node_to = self.get_nearest_node(lat_to, lng_to)
-        kml = self.route_db_query(node_from, node_to)
-        return kml
+        if node_to != None and node_from != None:
+            return self.route_db_query(node_from, node_to)
+        else:
+            return ""
 
     # Limit the search to 100 m
     def get_nearest_node(self, lat, lng):
@@ -30,8 +32,12 @@ class Routing:
             LIMIT 1
         """.format(lat = lat, lng = lng)
         cur.execute(query)
-        rec = cur.fetchone()
-        return rec[0]
+        rec = cur.fetchone()        
+        cur.close()
+        if rec != None:
+            return rec[0]
+        else:
+            return None
 
     def get_center(self):
         cur = self.conn.cursor()
@@ -54,4 +60,5 @@ class Routing:
         query = 'SELECT askml(geometry) FROM "roads_net" where nodeFrom=? and nodeTo=? limit 1'
         cur.execute(query, (node_from, node_to))
         rec = cur.fetchone()
+        cur.close()
         return rec[0]
