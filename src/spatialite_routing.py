@@ -52,9 +52,6 @@ class Routing:
         rec = cur.fetchone()
         return rec
 
-    def close(self):        
-        self.conn.close()
-
     def route_db_query(self, node_from, node_to):
         cur = self.conn.cursor()
         query = 'SELECT askml(geometry) FROM "roads_net" where nodeFrom=? and nodeTo=? limit 1'
