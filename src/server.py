@@ -5,7 +5,6 @@ from bottle import route, run, static_file, template
 from spatialite_routing import Routing
 import argparse
 
-kml_template = open("template.kml", "r").read()
 routing = None
 
 @route('/')
@@ -17,16 +16,12 @@ def index():
 def js(path):
     return static_file(path, root='js')
 
-@route('/hello')
-def hello():
-    return "Everyday a star is born (Can you say New York City?) Clap for 'em, clap for 'em, clap for 'em, hey"
-
 @route('/route/<start>/<end>')
 def route(start, end):
     lat_from, lng_from = tuple(map(float, start.split(",")))
     lat_to, lng_to = tuple(map(float, end.split(",")))
     path = routing.compute_route(lat_from, lng_from, lat_to, lng_to)
-    return template(kml_template, path=path)
+    return template("template.kml", path=path)
         
 
 if __name__ == "__main__":
