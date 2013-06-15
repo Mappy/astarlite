@@ -14,12 +14,21 @@ class Routing:
         kml = self.route_db_query(node_from, node_to)
         return kml
 
+    # Limit the search to 100 m
     def get_nearest_node(self, lat, lng):
         cur = self.conn.cursor()
-        query = """SELECT node_from  
-        FROM roads 
-        order by distance(geometry, PointFromText('Point({} {})')) limit 1
-        """.format(lat, lng)
+        query = """
+            SELECT node_from, ST_Distance(PointFromText('Point({lng} {lat})'), geometry)
+            FROM roads 
+            WHERE ROWID IN 
+            (  SELECT pkid
+                    FROM idx_roads_geometry
+               WHERE xmin < {lng} + 0.001 AND xmax > {lng} - 0.001
+                    AND ymin < {lat} + 0.001 AND ymax > {lat} - 0.001
+            )
+            ORDER BY Distance(PointFromText('Point({lng} {lat})'), geometry)
+            LIMIT 1
+        """.format(lat = lat, lng = lng)
         cur.execute(query)
         rec = cur.fetchone()
         return rec[0]

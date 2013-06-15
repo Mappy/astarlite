@@ -23,8 +23,8 @@ def hello():
 
 @route('/route/<start>/<end>')
 def route(start, end):
-    lng_from, lat_from = tuple(map(float, start.split(",")))
-    lng_to, lat_to = tuple(map(float, end.split(",")))
+    lat_from, lng_from = tuple(map(float, start.split(",")))
+    lat_to, lng_to = tuple(map(float, end.split(",")))
     path = routing.compute_route(lat_from, lng_from, lat_to, lng_to)
     return template(kml_template, path=path)
         
