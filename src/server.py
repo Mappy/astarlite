@@ -10,7 +10,10 @@ dbfile = "routing.sqlite"
 
 @route('/')
 def index():
-    return static_file("index.html", root=".")
+    route = Route(dbfile)
+    center = route.get_center()
+    route.close()
+    return template("index.html", center_x = center[0], center_y = center[1])
 
 @route('/js/<path:path>')
 def js(path):
@@ -27,6 +30,7 @@ def route(start, end):
     lat_from, lng_from = tuple(map(float, start.split(",")))
     lat_to, lng_to = tuple(map(float, end.split(",")))
     path = route.route(lat_from, lng_from, lat_to, lng_to)
+    route.close()
     return template(kml_template, path=path)
         
 
