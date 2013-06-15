@@ -27,8 +27,8 @@ def hello():
 def route(start, end):
     # ex: 7.4218041,43.736974400000001, 7.4186261,43.725380600000001
     route = Route(dbfile)
-    lat_from, lng_from = tuple(map(float, start.split(",")))
-    lat_to, lng_to = tuple(map(float, end.split(",")))
+    lng_from, lat_from = tuple(map(float, start.split(",")))
+    lng_to, lat_to = tuple(map(float, end.split(",")))
     path = route.route(lat_from, lng_from, lat_to, lng_to)
     route.close()
     return template(kml_template, path=path)
