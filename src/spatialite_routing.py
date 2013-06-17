@@ -48,18 +48,26 @@ class Routing:
         else:
             return rec[1]
 
-    def get_center(self):
+    def get_extent(self):
         cur = self.conn.cursor()
         query = """
-            SELECT X(center) as x, Y(center) as y FROM (
-                SELECT ST_Transform(
-                    SetSrid(Centroid(Extent(geometry)), 4326), 
-                  3785) as center FROM roads
-            )
+            SELECT 
+				X(PointN(linestring_bbox, 1)) as minx, 
+				Y(PointN(linestring_bbox, 1)) as miny, 
+				X(PointN(linestring_bbox, 3)) as maxx, 
+				Y(PointN(linestring_bbox, 3)) as maxy 
+				FROM (
+					SELECT ST_Transform(
+						ExteriorRing(SetSrid(Extent(geometry), 4326)), 
+					  3785) as linestring_bbox FROM roads
+				)
         """
         cur.execute(query)
         rec = cur.fetchone()
-        return rec
+        res = { 'minx' : rec[0], 'miny' : rec[1], 'maxx' : rec[2], 'maxy' : rec[3] }
+        cur.close()
+        return res
+
 
     def route_db_query(self, node_from, node_to):
         cur = self.conn.cursor()

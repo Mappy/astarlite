@@ -60,11 +60,8 @@
             map: {
                 layers: [new OpenLayers.Layer.OSM("Simple OSM Map")]
             },
-            center: [ {{center_x}}, {{center_y}}], 
-            zoom : 8,
-            height: 400,
-            width: 600,
-            title: "A Simple GeoExt Map"
+            extent: new OpenLayers.Bounds({{minx}}, {{miny}}, {{maxx}}, {{maxy}}),
+            title: "A map for routing"
         });
         map = panel.map;
 

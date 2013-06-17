@@ -9,8 +9,8 @@ routing = None
 
 @route('/')
 def index():
-    center = routing.get_center()
-    return template("index.html", center_x = center[0], center_y = center[1])
+    extent = routing.get_extent()
+    return template("index.html", extent)
 
 @route('/js/<path:path>')
 def js(path):
