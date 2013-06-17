@@ -7,6 +7,10 @@ class Routing:
         self.conn = sqlite.connect(db)
         self.conn.enable_load_extension(True)
         self.conn.load_extension("libspatialite.so.3")
+        cur = self.conn.cursor()
+        query = 'UPDATE roads_net SET algorithm="A*"'
+        cur.execute(query)
+        cur.close()
 
     def compute_route(self, lat_from, lng_from, lat_to, lng_to):
         node_from = self.get_nearest_node(lat_from, lng_from)
