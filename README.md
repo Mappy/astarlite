@@ -176,13 +176,37 @@ We can use the same query as earlier to compute the route between two nodes in o
         cur.close()
         return rec[0]
 
-Note that the question marks are replaced by the sqlite driver with the parameters ''''node_from'''' and ''''node_to'''' provided to the execute function.  These parameters are properly escaped, which means do not have to worry about sql injections, even with text.
+Note that the question marks are replaced by the sqlite driver with the parameters `node_from` and `node_to` provided to the execute function.  These parameters are properly escaped, which means do not have to worry about sql injections, even with text.
 
 The kml returned by this function (the record #0 of the only line) is not self-suffisant. It is intented to be inserted in a complete kml template.
 
 ## Display the availlable area on the map
+We want the initial position of the map to be centered on the area which is available for routing, so we will have to compute the bounding box roads.
+The spatialite function `Extent()` is an aggregate, which means it returns one result for all the rows, exactly like the `max()` or the `count()` functions. Here, it computes a geomtry which is the bounding box of all geomtries from the table :
+
+    SELECT Extent(geometry) FROM roads
+
+Unfortunately, this does not give us directly the xmin, xmax, ymin and ymax values.
+
+The extent is a Polygon geometry, and Polygons can have holes in spatialite. So we need extract what is called the exterior ring :
+
+    SELECT ExteriorRing(Extent(geometry)) as linestring_bbox FROM roads;
 
 
+The result is a Linestring geometry.
+
+Now we can acces the points from the Linestring with the ''PointN()'' function, which indices are 1-based (instead of 0-based like arrays in many languages), and get the X() and the Y() values of these points :
+
+    SELECT 
+        X(PointN(linestring_bbox, 1)) as minx, 
+        Y(PointN(linestring_bbox, 1)) as miny, 
+        X(PointN(linestring_bbox, 3)) as maxx, 
+        Y(PointN(linestring_bbox, 3)) as maxy 
+        FROM (
+            SELECT 
+                ExteriorRing(Extent(geometry))as linestring_bbox 
+            FROM roads
+        )
 
 
 ## Create a server
