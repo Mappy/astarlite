@@ -116,12 +116,60 @@ Let's suppose the user clicked on Paris (Lat = 48.85, Long = 2.35). A naive apro
 
 The function ST_Distance is provided by spatialite. This query scans every row from the roads table, computes the distance from the constant point MakePoint(2.35, 48.85), sorts the lines according to that distance, and keeps only one line : the nearest.
 
-This query, indeed, provides the correct answer, but is very slow because sqlite has to evaluate the distance for each row.
+This query, indeed, provides the correct answer, but is very slow because sqlite has to evaluate the distance for each row of the table.
 
 We can take advantage of the spatial index we created on the database.
-The purpose of the user is to compute a route between two points. We can easily decide that if there is no node near enought, it's not meaningfull to compute the route.
+The purpose of the user is to compute a route between two points. We can easily decide that if there is no node near enought, let's say 100m, it's not meaningfull to compute the route.
 
-It doesn't seam meaningfull for a 
+So we will select roads that are at distance of 0.001 degre (about 110 m), using the spatial index, wich makes the query 100 times faster :
+
+    SELECT *
+    FROM idx_roads_geometry
+    WHERE xmin < 2.35  + 0.001 AND xmax > 2.35  - 0.001
+      AND ymin < 48.85 + 0.001 AND ymax > 48.85 - 0.001
+
+Now we only have a few candidates to examine, so we can order roads by distance to retreive the closest one :
+
+    SELECT 
+        node_from
+    FROM roads 
+    WHERE ROWID IN 
+    (  SELECT pkid
+            FROM idx_roads_geometry
+       WHERE xmin < 2.35 + 0.001 AND xmax > 48.85 - 0.001
+            AND ymin < 2.35 + 0.001 AND ymax > 48.85 - 0.001
+    )
+    ORDER BY Distance(MakePoint(2.35, 48.85), geometry)
+    LIMIT 1
+
+At last, we want to know wich end of the road is the closest, so we compute the distance to both of them, and we'll let the application chose :
+
+    SELECT 
+        node_from, node_to, 
+        ST_Distance(MakePoint(2.35, 48.85), PointN(geometry, 1)) as dist_node_from, 
+        ST_Distance(MakePoint(2.35, 48.85), PointN(geometry, NumPoints(geometry))) as dist_node_to
+    FROM roads 
+    WHERE ROWID IN 
+    (  SELECT pkid
+            FROM idx_roads_geometry
+       WHERE xmin < 2.35 + 0.001 AND xmax > 48.85 - 0.001
+            AND ymin < 2.35 + 0.001 AND ymax > 48.85 - 0.001
+    )
+    ORDER BY Distance(MakePoint(2.35, 48.85), geometry)
+    LIMIT 1
+
+This is the query we parametrise and integrate in the function get_nearest_node in module spatialite_routing.
+
+
+## Compute the route
+We can use the same query as earlier to compute the route between two nodes in our graph. Result will be converted in kml (a convenient format for web mapping) thanks to askml() function from spatialite.
+
+    SELECT askml(geometry) FROM "roads_net" where nodeFrom=? and nodeTo=? limit 1
+
+where you can replace both question marks with nodes id.
+
+## Display the availlable area on the map
+
 
 
 
