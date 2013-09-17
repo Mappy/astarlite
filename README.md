@@ -162,11 +162,23 @@ This is the query we parametrise and integrate in the function get_nearest_node 
 
 
 ## Compute the route
-We can use the same query as earlier to compute the route between two nodes in our graph. Result will be converted in kml (a convenient format for web mapping) thanks to askml() function from spatialite.
+We can use the same query as earlier to compute the route between two nodes in our graph. We keep only the first raw, which sums up the whole route, and convert it to kml (a convenient format for web mapping) thanks to askml() function from spatialite.
 
-    SELECT askml(geometry) FROM "roads_net" where nodeFrom=? and nodeTo=? limit 1
+    def compute_route(self, lat_from, lng_from, lat_to, lng_to):
+        node_from = self.get_nearest_node(lat_from, lng_from)
+        node_to = self.get_nearest_node(lat_to, lng_to)
+        if node_to == None or node_from == None:
+            return ""       
+        cur = self.conn.cursor()
+        query = 'SELECT askml(geometry) FROM "roads_net" where nodeFrom=? and nodeTo=? limit 1'
+        cur.execute(query, (node_from, node_to))
+        rec = cur.fetchone()
+        cur.close()
+        return rec[0]
 
-where you can replace both question marks with nodes id.
+Note that the question marks are replaced by the sqlite driver with the parameters ''''node_from'''' and ''''node_to'''' provided to the execute function.  These parameters are properly escaped, which means do not have to worry about sql injections, even with text.
+
+The kml returned by this function (the record #0 of the only line) is not self-suffisant. It is intented to be inserted in a complete kml template.
 
 ## Display the availlable area on the map
 
