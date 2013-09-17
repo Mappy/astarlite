@@ -15,11 +15,15 @@ class Routing:
     def compute_route(self, lat_from, lng_from, lat_to, lng_to):
         node_from = self.get_nearest_node(lat_from, lng_from)
         node_to = self.get_nearest_node(lat_to, lng_to)
-        if node_to != None and node_from != None:
-            return self.route_db_query(node_from, node_to)
-        else:
-            return ""
-
+        if node_to == None or node_from == None:
+            return ""       
+        cur = self.conn.cursor()
+        query = 'SELECT askml(geometry) FROM "roads_net" where nodeFrom=? and nodeTo=? limit 1'
+        cur.execute(query, (node_from, node_to))
+        rec = cur.fetchone()
+        cur.close()
+        return rec[0]
+            
     # Limit the search to 100 m
     def get_nearest_node(self, lat, lng):
         cur = self.conn.cursor()
@@ -65,14 +69,4 @@ class Routing:
         cur.execute(query)
         rec = cur.fetchone()
         res = { 'minx' : rec[0], 'miny' : rec[1], 'maxx' : rec[2], 'maxy' : rec[3] }
-        cur.close()
         return res
-
-
-    def route_db_query(self, node_from, node_to):
-        cur = self.conn.cursor()
-        query = 'SELECT askml(geometry) FROM "roads_net" where nodeFrom=? and nodeTo=? limit 1'
-        cur.execute(query, (node_from, node_to))
-        rec = cur.fetchone()
-        cur.close()
-        return rec[0]
