@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
-<Document><Folder><name>mock2</name>
+<Document><Folder><name>Route</name>
   <Placemark>
 	<Style><LineStyle><color>ff0000ff</color></LineStyle> 
 
