@@ -208,9 +208,27 @@ Now we can acces the points from the Linestring with the ''PointN()'' function, 
             FROM roads
         )
 
+We still have one more operation to do. OpenLayers, the javascript libray we use to display the route will display an OSM map. 
+Unforunately this map will not accept coordinates in latitude and longitude, but in another coordinate system which is common in sofware maping : it has the same mercator look, but coordinates are in meters rather than in degrees of arc.
+So we have to convert the bounding box from coordinate system (CS) 4326 to CS 3785.
+In order to to that, we have to tell spatialite that our previous result has to be considered in CS 4326 with function ''SetSrid()'' and convert it with function ''ST_Transform()'' :
+
+    SELECT 
+        X(PointN(linestring_bbox, 1)) as minx, 
+        Y(PointN(linestring_bbox, 1)) as miny, 
+        X(PointN(linestring_bbox, 3)) as maxx, 
+        Y(PointN(linestring_bbox, 3)) as maxy 
+        FROM (
+            SELECT ST_Transform(
+                ExteriorRing(SetSrid(Extent(geometry), 4326)), 
+              3785) as linestring_bbox FROM roads
+        )
+
+Here we are, at last !
 
 ## Create a server
 A small server file server.py is availlable in the source tree. It uses a framework called Bottle that provides easy matching of urls to functions and templating :
+
 
 
 
