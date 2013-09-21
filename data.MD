@@ -68,9 +68,25 @@ And make our query again
     SELECT * FROM idf_net WHERE NodeFrom = 123255457 AND NodeTo = 1430982681;
      
 Now the processing time is reasonable !
-    
 
-### A note about Dijkstra and Astar
+## A dirty trick
+We have set up spatialite so that it computes routes with the Astar algorithm :
+
+    SELECT Algorithm = "A*" from idf_net;
+
+Now let's quit the spatialite console and get back in it, and check the configuration again :
+
+    .exit
+    spatialite routing.sqlite
+    SELECT Algorithm = "A*" from idf_net;
+
+What the fork ?
+
+We are used to saving tables when we update them. But idf_net is not a table, it is a *virtual* table. The issue there, was that it was impossible to provide a connection wide TODO : trouver le bon mot parameter so that several concurent user could compute routes with the algorithm they want. 
+The trick was to implement this surprsing column in memory... Be carefull with automatic memory mangement, because if spatialite needs memory, it will unload the virtual table, which will be recreated next time it is used... With the default algorithm (ie Dijstra)
+
+
+## A note about Dijkstra and Astar
 
 [Dijkstra algorithm](http://en.wikipedia.com/Dijkstra_(Algorithm)) TODO : vérifier le lien computes the shortest path between two nodes in a graph database. It scans every node, going away from the departure in every direction. There will be a moment when the algorithms scans the arrival node. It keeps on scanning nodes, in case the would be a shorter route through an unexplored node yet. It stops when TODO.
 . In order to do that, it has to examine every 

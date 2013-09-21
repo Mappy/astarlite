@@ -191,3 +191,4 @@ A small server file server.py is availlable in the source tree. It uses a framew
         routing = Routing(args.database)
         run(host='localhost', port=8080, debug=True)
 
+## TODO : ne pas oublier d'expliquer qu'on pert la conf de l'algo de recherche
