@@ -82,15 +82,16 @@ Now let's quit the spatialite console and get back in it, and check the configur
 
 What the fork ?
 
-We are used to saving tables when we update them. But idf_net is not a table, it is a *virtual* table. The issue there, was that it was impossible to provide a connection wide TODO : trouver le bon mot parameter so that several concurent user could compute routes with the algorithm they want. 
-The trick was to implement this surprsing column in memory... Be carefull with automatic memory mangement, because if spatialite needs memory, it will unload the virtual table, which will be recreated next time it is used... With the default algorithm (ie Dijstra)
+Regular SQL users are used to saving tables when we update them. But idf_net is not a table, it is a *virtual* table. 
+
+This strange feature is here to provide a connection wide TODO : trouver le bon mot parameter so that several concurent user can use the algorithm they want.
+The trick was to implement this surprsing column in memory... Be carefull with automatic memory mangement, because if spatialite needs memory TODO : vérifier par une expérience ou la code, it will unload the virtual table, which will be recreated next time it is used... With the default algorithm (ie Dijstra)
 
 
 ## A note about Dijkstra and Astar
 
-[Dijkstra algorithm](http://en.wikipedia.com/Dijkstra_(Algorithm)) TODO : vérifier le lien computes the shortest path between two nodes in a graph database. It scans every node, going away from the departure in every direction. There will be a moment when the algorithms scans the arrival node. It keeps on scanning nodes, in case the would be a shorter route through an unexplored node yet. It stops when TODO.
-. In order to do that, it has to examine every 
-Thus, the algorithm examines many nodes from the graph, which is really time consuming. Do we really have to examine node in Russia if we are trying to compute a route between Paris and Berlin ?
+[Dijkstra algorithm](http://en.wikipedia.com/Dijkstra_(Algorithm)) TODO : vérifier le lien computes the shortest path between two nodes in a graph database where every connection has a positive cost (in our case, the cost is the length of the line)
+The algorithm scans every node in order of increasing distance from the departure. Thus, it explores nodes in every direction. The algorithm stops when it finds the arrival node, with garanty that no shortest path exists.
 
 That's where Astar commes in action : this algorithms examines nodes preferentialy in the direction of the arrival and stops when it gets to it. This is far more faster ! But it offers no formal garanty that this will be the shortest path. 
 Here's how to trick it, or example :
