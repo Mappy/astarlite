@@ -80,4 +80,5 @@ The quotation mark in `{% raw %} {{!path}} {% endraw %}` tells the template engi
 
 Now let's try see [http://localhost:8000/route/48.85,3.35/48.90,2.40](http://localhost:8000/route/48.85,3.35/48.90,2.40) in your brower...
 
-You can even watch it TODO : trouver un service
+You can even watch it... For example by pasting the code [here](http://display-kml.appspot.com/)
+
