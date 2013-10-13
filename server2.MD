@@ -9,7 +9,7 @@ In this section, we will create a class ``Routing`` that will compute the actual
  
 ## Install spatialite driver for python
 
-Unfortunately, the default sqlite python module shipped with Ubuntu forbids to load external extensions, because it might allow malicious use to load binary code from sql commands.
+Unfortunately, the default sqlite python module shipped with Ubuntu forbids to load external extensions (eg spatialite), because it might allow malicious use to load binary code from sql commands.
 So we first have to install the proper driver :
 
     sudo apt-get install pysqlite2
@@ -93,11 +93,40 @@ At last, we want to know wich end of the road is the closest, so we compute the 
     ORDER BY Distance(MakePoint(2.35, 48.85), geometry)
     LIMIT 1
 
-This is the query we parametrise and integrate in the function get_nearest_node in module spatialite_routing.
+This is the query we parametrise and integrate in the function get_nearest_node in module spatialite_routing :
+
+    def get_nearest_node(self, lat, lng):
+        cur = self.conn.cursor()
+        query = """
+            SELECT 
+                node_from, node_to, 
+                ST_Distance(MakePoint({lng}, {lat}), PointN(geometry, 1)) as dist_node_from, 
+                ST_Distance(MakePoint({lng}, {lat}), PointN(geometry, NumPoints(geometry))) as dist_node_to
+            FROM roads 
+            WHERE ROWID IN 
+            (  SELECT pkid
+                    FROM idx_roads_geometry
+               WHERE xmin < {lng} + 0.001 AND xmax > {lng} - 0.001
+                    AND ymin < {lat} + 0.001 AND ymax > {lat} - 0.001
+            )
+            ORDER BY Distance(MakePoint({lng}, {lat}), geometry)
+            LIMIT 1
+        """.format(lat = lat, lng = lng)
+        cur.execute(query)
+        rec = cur.fetchone()        
+        cur.close()
+        if rec == None:
+            return None
+        if rec[2] < rec[3]:
+            return rec[0]
+        else:
+            return rec[1]
+
+Notice that the query computes both first and last node from a road, and the pyton code returns the closest one
 
 
 ## Compute the route
-We can use the same query as earlier to compute the route between two nodes in our graph. We keep only the first raw, which sums up the whole route, and convert it to kml (a convenient format for web mapping) thanks to askml() function from spatialite.
+We can use the same query as earlier (TODO lien vers la préparation data) to compute the route between two nodes in our graph. We keep only the first raw, which sums up the whole route, and convert it to kml (a convenient format for web mapping) thanks to askml() function from spatialite.
 
     def compute_route(self, lat_from, lng_from, lat_to, lng_to):
         node_from = self.get_nearest_node(lat_from, lng_from)
@@ -116,11 +145,13 @@ These parameters are properly escaped, which means do not have to worry about sq
 
 We can integrate this new function in server.py :
 
+    routing = None
+
     @route('/route/<lat_from:float>,<lng_from:float>/<lat_to:float>,<lng_to:float>')
     def route(lat_from, lng_from, lat_to, lng_to):
         path = routing.compute_route(lat_from, lng_from, lat_to, lng_to)
         return template("template.kml", path=path)
-            
+
 
     if __name__ == "__main__":
         parser = argparse.ArgumentParser()
@@ -130,5 +161,5 @@ We can integrate this new function in server.py :
         print "Running server with database {}".format(args.database)
         run(host='localhost', port=8080, debug=True)
 
-Now, run the server and see [http://localhost:8000/route/48.85,3.35/48.90,2.40](http://localhost:8000/route/48.85,3.35/48.90,2.40)...
+Now, run the server and open [http://localhost:8000/route/48.85,3.35/48.90,2.40](http://localhost:8000/route/48.85,3.35/48.90,2.40) in a browser.
 

@@ -7,7 +7,7 @@ In this section, we will create a python service that returns a route in kml (a 
 
 ## Dependencies
 
-If you don't already have Python, you can follow instructions on the main page : http://www.python.org/
+If you don't already have Python installed, you can follow instructions on the main page : http://www.python.org/
 
 We will use a web framework called bottle, which provides a web server, and an easy syntax 
 to map function with an url (the `@route()` decorator), even with parameters. It also provides a templating syntax.
@@ -59,9 +59,9 @@ Let's add a handler to respond to a web query :
 The anotation `@route` exposes an url (the regexp in argument) on the server, and maps it with the following function. 
 It allows the use of parameters in the url... You can even declare the type !
 
-Note : the `@route` anotation (route as url routing) has nothing to do with function `def route():` (route as routing on a map).
+Note : the `@route` anotation (as url routing) has nothing to do with function `def route():` (as driving directions on a map).
 
-The core of the function substitues the `path` parameter in the template  and returns it to the user (through http).
+The `template` function substitues the `path` parameter with the value provided in argument, into the template file.
 So we have to provide the template.kml file where the line will be inserted :
 
     <?xml version="1.0" encoding="utf-8" ?>
@@ -76,9 +76,9 @@ So we have to provide the template.kml file where the line will be inserted :
     </Folder></Document>
     </kml>
 
-The quotation mark in `{% raw %} {{!path}} {% endraw %}` tells the template engine it not escape html characters (like opening tags).
+The quotation mark in `{% raw %} {{!path}} {% endraw %}` tells the template engine it not escape html characters (eg opening tags).
 
 Now let's try see [http://localhost:8000/route/48.85,3.35/48.90,2.40](http://localhost:8000/route/48.85,3.35/48.90,2.40) in your brower...
 
-You can even watch it... For example by pasting the code [here](http://display-kml.appspot.com/)
+You can even watch the result... For example by pasting the code [here](http://display-kml.appspot.com/)
 
