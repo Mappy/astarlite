@@ -16,10 +16,8 @@ def index():
 def js(path):
     return static_file(path, root='js')
 
-@route('/route/<start>/<end>')
-def route(start, end):
-    lat_from, lng_from = tuple(map(float, start.split(",")))
-    lat_to, lng_to = tuple(map(float, end.split(",")))
+@route('/route/<lat_from:float>,<lng_from:float>/<lat_to:float>,<lng_to:float>')
+def route(lat_from, lng_from, lat_to, lng_to):
     path = routing.compute_route(lat_from, lng_from, lat_to, lng_to)
     return template("template.kml", path=path)
         
@@ -29,4 +27,5 @@ if __name__ == "__main__":
     parser.add_argument("database")
     args = parser.parse_args()
     routing = Routing(args.database)
+    print "Running server with database {}".format(args.database)
     run(host='localhost', port=8080, debug=True)
