@@ -178,7 +178,7 @@ It's time to present the `query_route` function :
 				map.removeLayer(kml_layer);
  			 }
 
-             // transform the two geometries from EPSG:4326 to EPSG:900913
+             // transform the two geometries from EPSG:900913 to EPSG:4326
              var startpoint = layer.features[0].geometry.clone();
              startpoint.transform(epsg_900913, epsg_4326);
              var finalpoint = layer.features[1].geometry.clone();
@@ -201,3 +201,7 @@ It's time to present the `query_route` function :
          }
     }
 
+At first, the function checks that the layer in argument contains two points. Then, `map.removeLayer(kml_layer);` is called to ensure any previous result is disposed. 
+Then both start and end points coordinates are projected using OpenLayers.Projection instances.
+
+Finally, we construct a kml vector layer that will receive the result of the routing query passed to the server with coordinates as arguments.
