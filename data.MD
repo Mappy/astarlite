@@ -5,7 +5,7 @@ title:
 # Explore spatialite and create a database
 
 ## A word about spatialite
-We are about to build a spatialite database for routing. [Spatialite](http://www.gaia-gis.it/gaia-sins/) TODO vérifier le lien is an extension for the [sqlite](bla) TODO : lien database.
+We are about to build a spatialite database for routing. [Spatialite](https://www.gaia-gis.it/fossil/libspatialite/index) is an extension for the [sqlite](http://www.sqlite.org/) database.
 Sqlite is not a common database in the sense that we are used to client-server databases like Postgresql or MySQL. Sqlite works as a library you use into your application, which produces local files (eg routing.sqlite). 
 There is no need to install a server, only deploying the application is suffisent. The only downside is that the spatialite extension to sqlite is not trivial to install on some plateforms because of the numerous dependencies.
 
@@ -19,11 +19,11 @@ We'll work on the suburban area around Paris called Île-de-France. You can down
 If you want faster computations, you can use a smaller data set such as the very small country called Monaco.
 
 ### Create the routing enabled database
-In order to setup a database that is suitable for routing computation, you need to decompress ile-de-france.osm.bz2 (you will need 20 Go TODO vérifier of free disk space)
+In order to setup a database that is suitable for routing computation, you need to decompress ile-de-france.osm.bz2 (you will need 4 Go of free disk space).
 
     bunzip2 ile-de-france.osm.bz2
 
-We will insert all the roads in the database with the [spatialite_osm_net](http://TODO-lien-vers-la-doc) command line utility, part of the spatialite-tools we installed from spatialite-bin package.
+We will insert all the roads in the database with the [spatialite_osm_net](https://www.gaia-gis.it/fossil/spatialite-tools/wiki?name=spatialite_osm_net) command line utility, part of the spatialite-tools we installed from spatialite-bin package.
 
     spatialite_osm_net -o  ile-de-france.osm -d routing.sqlite -T roads -m
 
@@ -94,7 +94,7 @@ Be carefull with automatic memory mangement, because if spatialite needs memory 
 
 ## A note about Dijkstra and Astar
 
-[Dijkstra algorithm](http://en.wikipedia.com/Dijkstra_(Algorithm)) TODO : vérifier le lien computes the shortest path between two nodes in a graph database where every connection has a positive cost (in our case, the cost is the length of the line)
+[Dijkstra algorithm](http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm) computes the shortest path between two nodes in a graph database where every connection has a positive cost (in our case, the cost is the length of the line)
 The algorithm scans every node in order of increasing distance from the departure. Thus, it explores nodes in every direction. The algorithm stops when it finds the arrival node : no shortest path exists.
 
 That's where Astar commes in action : this algorithms examines nodes preferentialy in the direction of the arrival and stops when it gets to it. This is far more faster ! But it offers no formal garanty that the result will be the shortest path. 
@@ -109,4 +109,4 @@ So the final command we have to run in spatialite console.
 
     SELECT CreateSpatialIndex('roads', 'geometry');
     
-This command creates a table `idx_roads_geometry` wich contains the id of each road and the bounding box. Section TODO describes how to take advantage of it.
+This command creates a table `idx_roads_geometry` wich contains the id of each road and the bounding box. Section [Compute routes on the server](server2.html) describes how to take advantage of it.
