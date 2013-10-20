@@ -22,4 +22,4 @@ You will find the final source of the whole project on [Github](http://www.githu
 * [Random considerations](considerations.html)
 * [Conclusion](conclusion.html)
 
-This tutorial, is a port of the very pedagogic [pgRouting workshop](http://workshop.pgrouting.com) for PostGIS from Daniel Kastl and Frédéric Junod. It is aimed at emphasing spatialite. Hence the html / javascript part will be described shortly.
+This tutorial, is a port of the very pedagogic [pgRouting workshop](http://workshop.pgrouting.com) for PostGIS from Daniel Kastl and Frédéric Junod. It is aimed at emphasing spatialite capabilities. Hence the html / javascript part will is a copy from the former [pgRouting 1.05 workshop](http://postgis.fr/chrome/site/docs/workshop-routing-foss4g/docs/_build/html/chapters/geoext_client.html).
