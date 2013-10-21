@@ -1,72 +1,207 @@
 ---
 layout: default
 ---
+# Display routes on the client browser
 
-# Display route on a map over the web
-In this page, we will see how to display the kml we computed on web map. Once again, we will focus
-on spatialite and a bit of Pyton. The html/js part is largely inspired from the pgRouting workshop (TODO). 
+## Display a basic map
+[GeoExt](http://www.geoext.org) is a JavaScript Toolkit for Rich Web Mapping Applications. GeoExt brings together the geospatial know how of [OpenLayers](http://www.openlayers.org) with the user interface savvy of [Ext JS](http://www.sencha.com) to help you build powerful desktop style GIS apps on the web with JavaScript.
 
-## Integrate html / javascript on the server
+Let’s start with a simple GeoExt example and extend it with routing functionality then:
 
-On the main server.py file, we will add two handlers :
+    <html>
+    <head>
 
-    @route('/')
-    def index():
-        return template("index.html")
+    <title>A Basic GeoExt Page</title>
+    <script src="ext/adapter/ext/ext-base.js" type="text/javascript"></script>
+    <script src="ext/ext-all.js"  type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="ext/resources/css/ext-all.css" />
+    <script src="OpenLayers/OpenLayers.js" type="text/javascript"></script>
+    <script src="GeoExt/script/GeoExt.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css"
+          href="GeoExt/resources/css/geoext-all.css" />
 
-    @route('/js/<path:path>')
-    def js(path):
-        return static_file(path, root='js')
-
-The first one will serve file index.html (TODO lien vers le code github), and the second one is
-for javascript static files. You can store the library we use (etx, GeoExt, proj4js, OpenLayers) inside a `js` forlder on your project.
-
-
-
-
-## Display the availlable area on the map
-At startup, the map chould display area available for routing, so we will have to compute the bounding box that includes the roads.
-The spatialite function `Extent()` is an aggregate, which means it returns one result for all the rows, exactly like the `max()` or the `count()` functions. 
-Here, it computes a geomtry which is the bounding box of all geomtries from the table :
-
-    SELECT Extent(geometry) FROM roads
-
-Unfortunately, this does not give us directly the xmin, xmax, ymin and ymax values.
-
-The extent is a Polygon geometry, and Polygons can have holes in spatialite. So we need extract what is called the exterior ring :
-
-    SELECT ExteriorRing(Extent(geometry)) as linestring_bbox FROM roads;
+    <script type="text/javascript">
+        Ext.onReady(function() {
+            var panel = new GeoExt.MapPanel({
+                renderTo: 'gxmap',
+                map: {
+                    layers: [new OpenLayers.Layer.OSM("Simple OSM Map")]
+                },
+                zoom: 1,
+                height: 400,
+                width: 600,
+                title: 'A map for routing'
+            });
+        });
+    </script>
+    </head>
+    <body>
+    <div id="gxmap"></div>
+    </body>
+    </html>
 
 
-The result is a Linestring geometry.
+In the header we include all the javascript and css needed for the application, we also define a function to be run when the page is loaded (Ext.onReady).
 
-Now we can acces the points from the Linestring with the ''PointN()'' function, which indices are 1-based (instead of 0-based like arrays in many languages), and get the X() and the Y() values of these points :
+This function creates a GeoExt.MapPanel with an OpenStreetMap layer. In this code, no OpenLayers.Map is explicitly created; the GeoExt.MapPanel do this under the hood: it takes the map options, the center and the zoom and create a map instance accordingly.
 
-    SELECT 
-        X(PointN(linestring_bbox, 1)) as minx, 
-        Y(PointN(linestring_bbox, 1)) as miny, 
-        X(PointN(linestring_bbox, 3)) as maxx, 
-        Y(PointN(linestring_bbox, 3)) as maxy 
-        FROM (
-            SELECT 
-                ExteriorRing(Extent(geometry))as linestring_bbox 
-            FROM roads
-        )
+To allow our users to get directions, we need to provide a way to select the start and final destination.
 
-We still have one more operation to do. OpenLayers, the javascript libray we use to display the route will display an OSM map. 
-Unforunately this map will not accept coordinates in latitude and longitude, but in another coordinate system which is common in sofware maping : it has the same mercator look, but coordinates are in meters rather than in degrees of arc.
-So we have to convert the bounding box from coordinate system (CS) 4326 to CS 3785.
-In order to to that, we have to tell spatialite that our previous result has to be considered in CS 4326 with function ''SetSrid()'' and convert it with function ''ST_Transform()'' :
 
-    SELECT 
-        X(PointN(linestring_bbox, 1)) as minx, 
-        Y(PointN(linestring_bbox, 1)) as miny, 
-        X(PointN(linestring_bbox, 3)) as maxx, 
-        Y(PointN(linestring_bbox, 3)) as maxy 
-        FROM (
-            SELECT ST_Transform(
-                ExteriorRing(SetSrid(Extent(geometry), 4326)), 
-              3785) as linestring_bbox FROM roads
-        )
+## Select the start and final destination
 
-Here we are, at last !
+We want to allow the users to draw and move the start and final destination points by clicking the map. 
+The browser queries the server and displays the route on the map. The user can later move the start 
+or final point and the route is updated.
+
+To do this we will need a tool to draw points (we will use the OpenLayers.Control.DrawFeatures control) and a tool to
+move points (OpenLayers.Control.DragFeatures will be perfect for this job). As their name suggests these
+controls comes from OpenLayers.
+
+These two controls will need a place to draw and manipulate the points; we will also need an 
+OpenLayers.Layer.Vector layer. In OpenLayers, a vector layer is a place where features
+(a geometry and attributes) can be drawn programmatically (in contrast, the OSM layer is a raster layer).
+
+
+Create the layer where the start and final points will be drawn and add it to the map :
+    var points_layer = new OpenLayers.Layer.Vector("points");
+    map.addLayers([points_layer, route_layer]);
+
+
+Let’s look at the control to draw the points: because this component has special behavior it’s more easy to 
+create a new class based on the standard OpenLayers.Control.DrawFeatures control. This new control 
+(named DrawPoints) is saved in a separated javascript file (web/DrawPoints.js):
+
+DrawPoints = OpenLayers.Class(OpenLayers.Control.DrawFeature, {
+
+    // this control is active by default
+    autoActivate: true,
+
+    initialize: function(layer, options) {
+        // only points can be drawn
+        var handler = OpenLayers.Handler.Point;
+        OpenLayers.Control.DrawFeature.prototype.initialize.apply(
+				this, [layer, handler, options]
+			);
+    },
+
+    drawFeature: function(geometry) {
+        OpenLayers.Control.DrawFeature.prototype.drawFeature.apply(
+				this, arguments	
+			);
+        if (this.layer.features.length == 1) {
+            // we just draw the startpoint
+            // note: if we want to apply a special style to the 
+            //       start point we should do this here
+        } else if (this.layer.features.length == 2) {
+            // we just draw the finalpoint
+            // note: if we want to apply a special style to the 
+            //       final point we should do this here
+
+            // we have all what we need; we can deactivate ourself.
+            this.deactivate();            
+        }
+    }
+});
+
+
+In the initialize function (that’s the class constructor) we set that this control can only draw 
+points (handler variable is OpenLayers.Handler.Point).
+
+The special behavior is implemented in the drawFeature function: because we only need the start and 
+final points the control deactivates itself when two points are drawn by counting how many features
+has the vector layer. Control deactivation is this.deactivate().
+
+Our control is then created with:
+
+    // create the control to draw the points (see the DrawPoints.js file)
+    var draw_points = new DrawPoints(points_layer);
+points_layer is the vector layer created earlier.
+
+
+And now for the DragFeature control:
+
+    // create the control to move the points
+    var drag_points = new OpenLayers.Control.DragFeature(points_layer, {
+        autoActivate: true
+    });
+Again, `points_layer` is the vector layer, `autoActivate: true` tells OpenLayers that we want this 
+control to be automatically activated.
+
+    // add the controls to the map
+    map.addControls([draw_points, drag_points]);
+Adds the controls to the map.
+
+## Call and receive data from web service
+
+The basic workflow to get a route from the web server is:
+
+* transform our points coordinates from EPSG:900913 (native coordinates for a OpenStreetMap in OpenLayers) to EPSG:4326 (latitude and longitude)
+* call the web service with the coordinnates of both points
+* add the response to the map in a Kml vector layer
+
+The first item is something new: our map uses the EPSG:900913 projection (because we use an OSM layer) but the web service expects coordinates 
+in EPSG:4326: we have to re-project the data before sending them. This is not a big deal: we will 
+simply use the Proj4js javascript library.
+
+**(The second item call the web service is covered in the next paragraph.)**
+
+
+## Trigger the web service call
+We need to call the web service when:
+* the two points are drawn
+* one of the point is moved
+Our vector layer generates an event (called featureadded) when a new feature is added, we can listen to 
+this event and call the server routing function:
+
+    draw_layer.events.on({
+        featureadded: function() {
+            query_route(draw_layer);
+        }
+    });
+Note Before we continue some words about events: an event in OpenLayers (the same apply for ExtJS and 
+other frameworks), is a system to allow a function to be called when something happened. For instance 
+when a layer is added to the map or when the mouse is over a feature. Multiple functions can be 
+connected to the same event.
+No event is generated when a point is moved, hopefully we can give a function to the DragFeature
+control to be called we the point is moved:
+
+    drag_points.onComplete = function() {
+        query_route(draw_layer);
+    };
+It's time to present the `query_route` function :
+
+     function query_route(layer) {
+         if (layer.features.length == 2) {
+             // erase the previous route
+             if (kml_layer != null) {				 
+				map.removeLayer(kml_layer);
+ 			 }
+
+             // transform the two geometries from EPSG:900913 to EPSG:4326
+             var startpoint = layer.features[0].geometry.clone();
+             startpoint.transform(epsg_900913, epsg_4326);
+             var finalpoint = layer.features[1].geometry.clone();
+             finalpoint.transform(epsg_900913, epsg_4326);
+
+             // load to route             
+			 url = "/route/" + startpoint.y + "," + startpoint.x + "/" + finalpoint.y + "," + finalpoint.x;
+			 kml_layer = new OpenLayers.Layer.Vector("KML", {
+				 strategies : [new OpenLayers.Strategy.Fixed()],
+				 protocol : new OpenLayers.Protocol.HTTP({
+					 url : url,
+					 format : new OpenLayers.Format.KML({
+						 extractStyles : true,
+						 extractAttributes : true,
+						 maxDepth : 2
+					 })
+				 })
+			 });
+			 map.addLayers([kml_layer]);
+         }
+    }
+
+At first, the function checks that the layer in argument contains two points. Then, `map.removeLayer(kml_layer);` is called to ensure any previous result is disposed. 
+Then both start and end points coordinates are projected using OpenLayers.Projection instances.
+
+Finally, we construct a kml vector layer that will receive the result of the routing query passed to the server with coordinates as arguments.
